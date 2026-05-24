@@ -53,12 +53,30 @@
       "amount": 98.0,
       "receiptRef": "file_41---421af3a2-5f4d-4014-9abd-b53d11b9cec1.jpg",
       "createdAt": "2026-05-24T03:58:01Z"
+    },
+    {
+      "id": "TRX007",
+      "date": "2026-04-12",
+      "spendingType": "Dining",
+      "description": "McDonald's - Plain Rice with Grilled Pork and Mashed Potato",
+      "amount": 64.5,
+      "receiptRef": "file_41---b8f456b0-a85e-43e5-833f-1b3b1cadb3fe.jpg",
+      "createdAt": "2026-05-24T04:11:00Z"
+    },
+    {
+      "id": "TRX008",
+      "date": "2026-04-12",
+      "spendingType": "Dining",
+      "description": "YAUAT Local - Chicken Chop, Sausage",
+      "amount": 50.1,
+      "receiptRef": "file_40---15d3c3d7-3897-4eec-a907-9e1855d0f16e.jpg",
+      "createdAt": "2026-05-24T04:11:01Z"
     }
   ],
   "summary": {
-    "total": 838.9,
+    "total": 953.5,
     "byType": {
-      "Dining": 544.6,
+      "Dining": 659.2,
       "Transport": 42.5,
       "Shopping": 156.8,
       "Entertainment": 95.0
@@ -66,11 +84,12 @@
     "byDay": {
       "2025-05-23": 98.0,
       "2025-05-24": 178.6,
+      "2026-04-12": 114.6,
       "2026-04-18": 268.0,
       "2026-04-20": 42.5,
       "2026-04-22": 156.8,
       "2026-04-24": 95.0
     }
   },
-  "exportedAt": "2026-05-24T03:58:00Z"
+  "exportedAt": "2026-05-24T04:11:00Z"
 }
