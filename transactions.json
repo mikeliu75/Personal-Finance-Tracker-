@@ -5,7 +5,7 @@
       "date": "2026-04-18",
       "spendingType": "Dining",
       "description": "IPPUDO (Queensway Plaza)",
-      "amount": 268.00,
+      "amount": 268.0,
       "receiptRef": "receipt_latest.jpg",
       "createdAt": "2026-05-24T03:25:00Z"
     },
@@ -14,7 +14,7 @@
       "date": "2026-04-20",
       "spendingType": "Transport",
       "description": "MTR - Sheung Wan to Tsim Sha Tsui",
-      "amount": 42.50,
+      "amount": 42.5,
       "receiptRef": null,
       "createdAt": "2026-05-24T03:25:01Z"
     },
@@ -23,7 +23,7 @@
       "date": "2026-04-22",
       "spendingType": "Shopping",
       "description": "Mannings - Daily necessities",
-      "amount": 156.80,
+      "amount": 156.8,
       "receiptRef": null,
       "createdAt": "2026-05-24T03:25:02Z"
     },
@@ -32,25 +32,35 @@
       "date": "2026-04-24",
       "spendingType": "Entertainment",
       "description": "Cinema - Movie ticket",
-      "amount": 95.00,
+      "amount": 95.0,
       "receiptRef": null,
       "createdAt": "2026-05-24T03:25:03Z"
+    },
+    {
+      "id": "TRX005",
+      "date": "2026-05-23",
+      "spendingType": "Dining",
+      "description": "Pizza Hut (Express)",
+      "amount": 178.6,
+      "receiptRef": "file_41---8068805b-895b-4b62-ab25-2e07aa0222e7.jpg",
+      "createdAt": "2026-05-24T03:57:00Z"
     }
   ],
   "summary": {
-    "total": 562.30,
+    "total": 740.9,
     "byType": {
-      "Dining": 268.00,
-      "Transport": 42.50,
-      "Shopping": 156.80,
-      "Entertainment": 95.00
+      "Dining": 446.6,
+      "Transport": 42.5,
+      "Shopping": 156.8,
+      "Entertainment": 95.0
     },
     "byDay": {
-      "2026-04-18": 268.00,
-      "2026-04-20": 42.50,
-      "2026-04-22": 156.80,
-      "2026-04-24": 95.00
+      "2026-04-18": 268.0,
+      "2026-04-20": 42.5,
+      "2026-04-22": 156.8,
+      "2026-04-24": 95.0,
+      "2026-05-23": 178.6
     }
   },
-  "exportedAt": "2026-05-24T03:25:00Z"
+  "exportedAt": "2026-05-24T03:57:00Z"
 }
