@@ -1,0 +1,56 @@
+{
+  "transactions": [
+    {
+      "id": "TRX001",
+      "date": "2026-04-18",
+      "spendingType": "Dining",
+      "description": "IPPUDO (Queensway Plaza)",
+      "amount": 268.00,
+      "receiptRef": "receipt_latest.jpg",
+      "createdAt": "2026-05-24T03:25:00Z"
+    },
+    {
+      "id": "TRX002",
+      "date": "2026-04-20",
+      "spendingType": "Transport",
+      "description": "MTR - Sheung Wan to Tsim Sha Tsui",
+      "amount": 42.50,
+      "receiptRef": null,
+      "createdAt": "2026-05-24T03:25:01Z"
+    },
+    {
+      "id": "TRX003",
+      "date": "2026-04-22",
+      "spendingType": "Shopping",
+      "description": "Mannings - Daily necessities",
+      "amount": 156.80,
+      "receiptRef": null,
+      "createdAt": "2026-05-24T03:25:02Z"
+    },
+    {
+      "id": "TRX004",
+      "date": "2026-04-24",
+      "spendingType": "Entertainment",
+      "description": "Cinema - Movie ticket",
+      "amount": 95.00,
+      "receiptRef": null,
+      "createdAt": "2026-05-24T03:25:03Z"
+    }
+  ],
+  "summary": {
+    "total": 562.30,
+    "byType": {
+      "Dining": 268.00,
+      "Transport": 42.50,
+      "Shopping": 156.80,
+      "Entertainment": 95.00
+    },
+    "byDay": {
+      "2026-04-18": 268.00,
+      "2026-04-20": 42.50,
+      "2026-04-22": 156.80,
+      "2026-04-24": 95.00
+    }
+  },
+  "exportedAt": "2026-05-24T03:25:00Z"
+}

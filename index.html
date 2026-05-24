@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F6FA;
+      --surface: #FFFFFF;
+      --primary: #1A73E8;
+      --primary-hover: #1557B0;
+      --danger: #EA4335;
+      --success: #34A853;
+      --text-primary: #202124;
+      --text-secondary: #5F6368;
+      --border: #E8EAED;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+    .header-total {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .header-total strong {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      color: var(--danger);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary);
+      background: #E8F1FD;
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-text { color: var(--text-secondary); font-size: 14px; }
+    .upload-text strong { color: var(--primary); }
+
+    .upload-progress {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 300ms ease;
+    }
+
+    .upload-status {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 150ms ease;
+      background: var(--surface);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    input[type="number"] { font-family: 'JetBrains Mono', monospace; }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 150ms ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { background: var(--border); color: var(--text-secondary); cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-danger {
+      background: var(--surface);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.total { background: #FDECEA; }
+    .stat-icon.count { background: #E8F1FD; }
+    .stat-icon.avg { background: #F3E8FD; }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Transaction Table */
+    .tx-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .export-btn {
+      padding: 8px 16px;
+      background: var(--surface);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+
+    .export-btn:hover { background: #E8F1FD; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    th:hover { color: var(--primary); }
+
+    td {
+      padding: 12px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: #F8F9FA; }
+
+    .amount-cell {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--danger);
+      font-weight: 500;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .type-Dining { background: #FDECEA; color: #C5221F; }
+    .type-Transport { background: #FEF7E0; color: #E37400; }
+    .type-Shopping { background: #E6F4EA; color: #1E8E3E; }
+    .type-Entertainment { background: #F3E8FD; color: #9334E6; }
+    .type-Utilities { background: #E8F1FD; color: #1A73E8; }
+    .type-Healthcare { background: #E0F7FA; color: #00838F; }
+    .type-Other { background: #F5F5F5; color: #616161; }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 150ms ease, background 150ms ease;
+      opacity: 0;
+    }
+
+    tr:hover .delete-btn { opacity: 1; }
+    .delete-btn:hover { color: var(--danger); background: #FDECEA; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+    /* Parse status */
+    .parse-status {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .parse-status.success { background: #E6F4EA; color: #1E8E3E; display: block; }
+    .parse-status.error { background: #FDECEA; color: #C5221F; display: block; }
+
+    /* Receipt Preview */
+    .receipt-preview {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #F8F9FA;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .receipt-preview.visible { display: block; }
+    .receipt-preview img {
+      max-width: 200px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <h1>💰 Expense Tracker</h1>
+    <div class="header-total">
+      This Month
+      <strong id="monthTotal">HK$ 0.00</strong>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid" style="display:none;">
+    <div class="stat-card">
+      <div class="stat-icon total">💸</div>
+      <div>
+        <div class="stat-value" id="statTotal">HK$ 0.00</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon count">📋</div>
+      <div>
+        <div class="stat-value" id="statCount">0</div>
+        <div class="stat-label">Transactions</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon avg">📊</div>
+      <div>
+        <div class="stat-value" id="statAvg">HK$ 0.00</div>
+        <div class="stat-label">Average</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="card-title">📷 Upload Receipt</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+      <div class="upload-icon">🧾</div>
+      <div class="upload-text">Drop a receipt here or <strong>click to upload</strong></div>
+      <div class="upload-progress" id="uploadProgress">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="upload-status" id="uploadStatus">Processing...</div>
+      </div>
+    </div>
+    <div id="receiptPreview" class="receipt-preview">
+      <img id="previewImg" src="" alt="Receipt preview">
+      <div id="receiptFileName"></div>
+    </div>
+    <div class="parse-status" id="parseStatus"></div>
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:10px;">
+      Share the receipt image in chat and I'll auto-fill the details.
+    </p>
+  </div>
+
+  <!-- Add Transaction Form -->
+  <div class="card">
+    <div class="card-title">➕ Add Transaction</div>
+    <form id="txForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="receiptRef">Receipt</label>
+          <input type="text" id="receiptRef" placeholder="e.g. receipt_20260418.jpg" readonly>
+        </div>
+        <div class="form-group">
+          <label for="spendingType">Spending Type *</label>
+          <select id="spendingType" required>
+            <option value="">Select type...</option>
+            <option value="Dining">Dining</option>
+            <option value="Transport">Transport</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="txDate">Date *</label>
+          <input type="date" id="txDate" required>
+        </div>
+        <div class="form-group">
+          <label for="txAmount">Amount (HK$) *</label>
+          <input type="number" id="txAmount" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+        <div class="form-group full">
+          <label for="txDescription">Description</label>
+          <input type="text" id="txDescription" placeholder="e.g. IPPUDO (Queensway Plaza)">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Add Transaction</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title">🥧 Spending by Type</div>
+      <canvas id="pieChart"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Per-Day Spending</div>
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Transaction List -->
+  <div class="card">
+    <div class="tx-header">
+      <div class="card-title" style="margin:0;">📋 Transactions</div>
+      <button class="export-btn" id="exportBtn">⬇ Export JSON</button>
+    </div>
+    <div class="table-wrap">
+      <table id="txTable">
+        <thead>
+          <tr>
+            <th data-sort="date">Date ↕</th>
+            <th data-sort="type">Type ↕</th>
+            <th data-sort="description">Description ↕</th>
+            <th data-sort="amount">Amount ↕</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="txBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📭</div>
+        <div>No transactions yet. Upload a receipt to get started.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────────
+  const STORAGE_KEY = 'expense_tracker_transactions';
+  let transactions = [];
+  let sortField = 'date';
+  let sortDir = 'desc';
+
+  const TYPE_COLORS = {
+    Dining: '#EA4335',
+    Transport: '#FBBC04',
+    Shopping: '#34A853',
+    Entertainment: '#9334E6',
+    Utilities: '#1A73E8',
+    Healthcare: '#00ACC1',
+    Other: '#9E9E9E'
+  };
+
+  // ─── Init ────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage();
+    setupEventListeners();
+    renderAll();
+  });
+
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        transactions = data.transactions || [];
+      }
+    } catch (e) {
+      console.warn('Failed to load from storage:', e);
+    }
+    // Set default date to today
+    document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+  }
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, transactions }));
+  }
+
+  // ─── Event Listeners ─────────────────────────────────────────────────
+  function setupEventListeners() {
+    // Upload drag/drop
+    const zone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    // Form submit
+    document.getElementById('txForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      addTransaction();
+    });
+
+    // Export
+    document.getElementById('exportBtn').addEventListener('click', exportJSON);
+
+    // Table sorting
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const field = th.dataset.sort;
+        if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        else { sortField = field; sortDir = 'asc'; }
+        renderTable();
+      });
+    });
+  }
+
+  // ─── File Upload ─────────────────────────────────────────────────────
+  function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+      showParseStatus('error', 'Please upload an image file (JPG, PNG, WebP)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById('previewImg');
+      img.src = e.target.result;
+      document.getElementById('receiptFileName').textContent = file.name;
+      document.getElementById('receiptRef').value = file.name;
+      document.getElementById('receiptPreview').classList.add('visible');
+
+      showParseStatus('success', 'Receipt uploaded! Share the image in chat to auto-fill details, or fill manually below.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showParseStatus(type, message) {
+    const el = document.getElementById('parseStatus');
+    el.className = `parse-status ${type}`;
+    el.textContent = message;
+    setTimeout(() => { el.className = 'parse-status'; el.style.display = 'none'; }, 5000);
+  }
+
+  // ─── Transaction CRUD ────────────────────────────────────────────────
+  function generateId() {
+    return 'TRX' + Date.now().toString(36).toUpperCase();
+  }
+
+  function addTransaction() {
+    const receiptRef = document.getElementById('receiptRef').value.trim();
+    const spendingType = document.getElementById('spendingType').value;
+    const date = document.getElementById('txDate').value;
+    const amount = parseFloat(document.getElementById('txAmount').value);
+    const description = document.getElementById('txDescription').value.trim();
+
+    if (!spendingType || !date || isNaN(amount) || amount <= 0) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const tx = {
+      id: generateId(),
+      date,
+      spendingType,
+      description: description || '(No description)',
+      amount,
+      receiptRef: receiptRef || null,
+      createdAt: new Date().toISOString()
+    };
+
+    transactions.push(tx);
+    saveToStorage();
+    renderAll();
+
+    // Reset form except date
+    document.getElementById('txForm').reset();
+    document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('receiptRef').value = '';
+    document.getElementById('receiptPreview').classList.remove('visible');
+  }
+
+  function deleteTransaction(id) {
+    if (!confirm('Delete this transaction?')) return;
+    transactions = transactions.filter(t => t.id !== id);
+    saveToStorage();
+    renderAll();
+  }
+
+  // ─── Render ──────────────────────────────────────────────────────────
+  function renderAll() {
+    renderStats();
+    renderTable();
+    renderCharts();
+  }
+
+  function renderStats() {
+    const grid = document.getElementById('statsGrid');
+    if (transactions.length === 0) {
+      grid.style.display = 'none';
+      return;
+    }
+    grid.style.display = 'grid';
+
+    const total = transactions.reduce((s, t) => s + t.amount, 0);
+    const count = transactions.length;
+    const avg = total / count;
+
+    // Month total
+    const now = new Date();
+    const monthTx = transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+    const monthTotal = monthTx.reduce((s, t) => s + t.amount, 0);
+    document.getElementById('monthTotal').textContent = formatHK(monthTotal);
+    document.getElementById('statTotal').textContent = formatHK(total);
+    document.getElementById('statCount').textContent = count;
+    document.getElementById('statAvg').textContent = formatHK(avg);
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('txBody');
+    const empty = document.getElementById('emptyState');
+
+    if (transactions.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    // Sort
+    const sorted = [...transactions].sort((a, b) => {
+      let va = a[sortField], vb = b[sortField];
+      if (sortField === 'amount') { va = parseFloat(va); vb = parseFloat(vb); }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    tbody.innerHTML = sorted.map(t => `
+      <tr>
+        <td>${formatDate(t.date)}</td>
+        <td><span class="type-badge type-${t.spendingType}">${t.spendingType}</span></td>
+        <td>${escapeHtml(t.description)}</td>
+        <td class="amount-cell">${formatHK(t.amount)}</td>
+        <td><button class="delete-btn" onclick="deleteTransaction('${t.id}')" title="Delete">×</button></td>
+      </tr>
+    `).join('');
+  }
+
+  let pieChartInstance = null;
+  let barChartInstance = null;
+
+  function renderCharts() {
+    renderPieChart();
+    renderBarChart();
+  }
+
+  function renderPieChart() {
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    const byType = {};
+    transactions.forEach(t => {
+      byType[t.spendingType] = (byType[t.spendingType] || 0) + t.amount;
+    });
+
+    const labels = Object.keys(byType);
+    const data = Object.values(byType);
+    const colors = labels.map(l => TYPE_COLORS[l] || '#9E9E9E');
+
+    if (pieChartInstance) pieChartInstance.destroy();
+    if (labels.length === 0) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.font = '14px Inter';
+      ctx.fillStyle = '#9AA0A6';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data yet', ctx.canvas.width / 2, ctx.canvas.height / 2);
+      return;
+    }
+
+    pieChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { family: 'Inter', size: 12 }, padding: 16, usePointStyle: true }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.label}: HK$ ${ctx.raw.toFixed(2)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderBarChart() {
+    const ctx = document.getElementById('barChart').getContext('2d');
+    const byDay = {};
+    transactions.forEach(t => {
+      byDay[t.date] = (byDay[t.date] || 0) + t.amount;
+    });
+
+    const sortedDates = Object.keys(byDay).sort();
+    const data = sortedDates.map(d => byDay[d]);
+    const colors = sortedDates.map(d => {
+      // Dominant type that day
+      const dayTx = transactions.filter(t => t.date === d);
+      const typeTotals = {};
+      dayTx.forEach(t => { typeTotals[t.spendingType] = (typeTotals[t.spendingType] || 0) + t.amount; });
+      const dominant = Object.entries(typeTotals).sort((a, b) => b[1] - a[1])[0];
+      return TYPE_COLORS[dominant?.[0]] || '#9E9E9E';
+    });
+
+    if (barChartInstance) barChartInstance.destroy();
+    if (sortedDates.length === 0) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.font = '14px Inter';
+      ctx.fillStyle = '#9AA0A6';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data yet', ctx.canvas.width / 2, ctx.canvas.height / 2);
+      return;
+    }
+
+    barChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sortedDates.map(d => formatDate(d)),
+        datasets: [{
+          label: 'HK$',
+          data,
+          backgroundColor: colors,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (v) => 'HK$' + v.toFixed(0),
+              font: { family: 'JetBrains Mono', size: 11 }
+            },
+            grid: { color: '#F0F0F0' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Inter', size: 11 } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` HK$ ${ctx.raw.toFixed(2)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ─── Export ──────────────────────────────────────────────────────────
+  function exportJSON() {
+    if (transactions.length === 0) {
+      alert('No transactions to export.');
+      return;
+    }
+
+    const byType = {};
+    const byDay = {};
+    transactions.forEach(t => {
+      byType[t.spendingType] = (byType[t.spendingType] || 0) + t.amount;
+      byDay[t.date] = (byDay[t.date] || 0) + t.amount;
+    });
+
+    const total = transactions.reduce((s, t) => s + t.amount, 0);
+
+    const payload = {
+      transactions,
+      summary: {
+        total,
+        byType,
+        byDay,
+        transactionCount: transactions.length
+      },
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────
+  function formatHK(n) {
+    return 'HK$ ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function formatDate(d) {
+    const [y, m, day] = d.split('-');
+    return `${y}-${m}-${day}`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ─── Public API for AI to call ───────────────────────────────────────
+  window.fillReceiptData = function(data) {
+    // Called by AI agent after analyzing receipt image
+    // data = { receiptRef, date, amount, description, spendingType }
+    if (data.receiptRef) document.getElementById('receiptRef').value = data.receiptRef;
+    if (data.date) document.getElementById('txDate').value = data.date;
+    if (data.amount) document.getElementById('txAmount').value = data.amount.toFixed(2);
+    if (data.description) document.getElementById('txDescription').value = data.description;
+    if (data.spendingType) {
+      const sel = document.getElementById('spendingType');
+      for (let opt of sel.options) {
+        if (opt.value === data.spendingType) { sel.value = data.spendingType; break; }
+      }
+    }
+    showParseStatus('success', `Auto-filled from receipt: ${data.description || data.spendingType} — HK$${data.amount?.toFixed(2) || '?'}`);
+  };
+
+  window.preParseReceipt = function(imageDataUrl, filename) {
+    document.getElementById('receiptRef').value = filename;
+    const img = document.getElementById('previewImg');
+    img.src = imageDataUrl;
+    document.getElementById('receiptFileName').textContent = filename;
+    document.getElementById('receiptPreview').classList.add('visible');
+  };
+</script>
+</body>
+</html>
