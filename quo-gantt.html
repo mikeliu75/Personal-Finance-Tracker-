@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotation Exercise Tracker — Gantt Chart</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f8; padding: 24px; color: #222; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #888; margin-bottom: 20px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  .today { position: absolute; top: 0; bottom: 0; width: 1px; background: #e53e3e; opacity: 0.7; }
+  .today-label { position: absolute; top: -18px; font-size: 10px; color: #e53e3e; transform: translateX(-50%); }
+
+  .chart-wrap { overflow-x: auto; }
+  .chart { min-width: 1100px; position: relative; }
+
+  .header-row { display: flex; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 0; }
+  .label-col { width: 280px; flex-shrink: 0; font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; padding-left: 4px; }
+  .months-row { display: flex; flex: 1; }
+  .month { flex: 1; text-align: center; font-size: 11px; font-weight: 600; color: #718096; border-left: 1px solid #e2e8f0; padding: 2px 0; }
+  .month span { display: block; font-size: 10px; color: #a0aec0; font-weight: 400; }
+
+  .row { display: flex; align-items: center; margin-bottom: 6px; position: relative; }
+  .row:hover { background: #f7fafc; border-radius: 6px; }
+  .label-col-data { width: 280px; flex-shrink: 0; padding: 6px 8px 6px 4px; }
+  .ref { font-size: 11px; font-weight: 600; color: #2d3748; }
+  .title { font-size: 11px; color: #718096; margin-top: 2px; line-height: 1.3; }
+  .stage-badge { display: inline-block; font-size: 9px; font-weight: 700; background: #3182ce; color: #fff; border-radius: 10px; padding: 1px 6px; margin-top: 4px; }
+
+  .bars-row { display: flex; flex: 1; position: relative; height: 36px; }
+  .bar { position: absolute; height: 22px; top: 7px; border-radius: 4px; opacity: 0.85; }
+  .bar-segment { position: absolute; height: 22px; top: 7px; border-radius: 4px; }
+  .bar-done { background: linear-gradient(90deg, #38a169, #48bb78); }
+  .bar-todo { background: #e2e8f0; }
+  .bar-label { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 600; color: #fff; white-space: nowrap; }
+
+  /* Stage color coding */
+  .s1 { background: #3182ce; }
+  .s2 { background: #805ad5; }
+  .s3 { background: #d69e2e; }
+  .s4 { background: #dd6b20; }
+  .s5 { background: #e53e3e; }
+  .s6 { background: #319795; }
+  .s7 { background: #2f855a; }
+  .s8 { background: #2c5282; }
+  .s9 { background: #744210; }
+  .s10 { background: #276749; }
+
+  .milestone { position: absolute; width: 10px; height: 10px; background: #e53e3e; border-radius: 50%; top: 13px; transform: translateX(-50%); border: 2px solid #fff; box-shadow: 0 0 0 2px #e53e3e; }
+
+  .today-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #e53e3e; opacity: 0.5; z-index: 10; }
+  .today-label { position: absolute; top: -20px; font-size: 9px; color: #e53e3e; font-weight: 600; white-space: nowrap; }
+
+  .note { font-size: 10px; color: #cbd5e0; margin-top: 20px; text-align: right; }
+</style>
+</head>
+<body>
+<h1>📊 Quotation Exercise Tracker — Gantt Chart</h1>
+<p class="subtitle">As at 26 May 2026 &nbsp;|&nbsp; 10-stage quotation process</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#3182ce"></div>Stage 1–4 (Early)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#805ad5"></div>Stage 5–7 (Mid)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e53e3e"></div>Stage 8–10 (Final)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#319795"></div>Completed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Pending</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#dd6b20;border-radius:50%;width:10px;height:10px;border:2px solid #fff;box-shadow:0 0 0 1px #dd6b20"></div>Deadline</</div>
+</div>
+
+<div class="chart-wrap">
+<div class="chart" id="chart"></div>
+</div>
+
+<script>
+const TODAY = new Date('2026-05-26');
+
+// Columns: Jan Feb Mar Apr May Jun Jul Aug Sep
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+const MONTH_DAYS = [31,28,31,30,31,30,31,31,30];
+const CUMULATIVE = [0,31,59,90,120,151,181,212,243]; // day-of-year start
+
+// Start of chart = Jan 1 2026 = day 0
+// End = Sep 30 2026 = day 272
+const CHART_START = new Date('2026-01-01');
+const CHART_END = new Date('2026-09-30');
+const TOTAL_DAYS = 273;
+
+function dateToX(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const diff = (d - CHART_START) / (1000*60*60*24);
+  return (diff / TOTAL_DAYS) * 100;
+}
+function dateToW(startStr, endStr) {
+  if (!startStr || !endStr) return 0;
+  const s = new Date(startStr);
+  const e = new Date(endStr);
+  const diff = (e - s) / (1000*60*60*24);
+  return (diff / TOTAL_DAYS) * 100;
+}
+
+// Data: ref, title, owner, stage, issueDate, closeDate, nextAction
+const quotations = [
+  {
+    ref: 'QUO62/04/22(2026)',
+    title: 'Leadership Development Programme for SEOs',
+    owner: 'S(G)TD5',
+    stage: 7,
+    issueDate: null,
+    closeDate: null,
+    nextAction: 'Await SEO(Adm)1 clearance (exp. 29/05)',
+    milestones: { issue: null, close: null, panel: null }
+  },
+  {
+    ref: 'QUO62/08/25(2026)',
+    title: 'IT Software Application Training Courses',
+    owner: 'S(G)TD5',
+    stage: 6,
+    issueDate: null,
+    closeDate: null,
+    nextAction: 'Pending members for signing panel report',
+    milestones: { issue: null, close: null, panel: null }
+  },
+  {
+    ref: 'QUO62/11/11(2026)',
+    title: 'Effective Modules on Enhanced Spoken English Communications for Personal Secretaries',
+    owner: 'E(G)TD51',
+    stage: 2,
+    issueDate: '2026-05-19',
+    closeDate: '2026-06-05',
+    nextAction: 'Awaiting quotation closing on 05/06',
+    milestones: { issue: '2026-05-19', close: '2026-06-05', panel: null }
+  },
+  {
+    ref: 'QUO62/03/16(2026)',
+    title: 'Three-day English Workshop for EOsII',
+    owner: 'E(G)TD51',
+    stage: 2,
+    issueDate: '2026-05-20',
+    closeDate: '2026-06-12',
+    nextAction: 'Awaiting quotation closing on 12/06',
+    milestones: { issue: '2026-05-20', close: '2026-06-12', panel: null }
+  },
+  {
+    ref: 'QUO62/16/47(2026)',
+    title: 'Workshop on Effective Speaking and Presentation Skills',
+    owner: 'S(G)TD5',
+    stage: 2,
+    issueDate: '2026-05-21',
+    closeDate: '2026-06-16',
+    nextAction: 'Awaiting quotation closing on 16/06',
+    milestones: { issue: '2026-05-21', close: '2026-06-16', panel: null }
+  },
+  {
+    ref: 'QUO62/06/18(2026)',
+    title: 'Enhanced Communication in English for Customer Service (CO & CA Grade)',
+    owner: 'E(G)TD51',
+    stage: 1,
+    issueDate: '2026-05-26',
+    closeDate: '2026-06-16',
+    nextAction: 'Pending quotation closing on 16/06',
+    milestones: { issue: '2026-05-26', close: '2026-06-16', panel: null }
+  }
+];
+
+// Stage bar definitions: each stage gets 10% width (10 stages = 100%)
+// Stage 1 = first 10%, Stage 10 = last 10%
+// Completed stages = coloured; current = striped; future = grey
+function buildBarHTML(q) {
+  const stage = q.stage;
+  const left = ((stage - 1) / 10) * 100;
+  const width = (stage / 10) * 100;
+  const todayPct = ((TODAY - CHART_START) / (CHART_END - CHART_START)) * 100;
+
+  let bars = '';
+
+  // Draw completed stages as solid blocks
+  if (stage >= 1) {
+    const w = (Math.min(stage, 10) / 10) * 100;
+    const color = stage >= 8 ? '#e53e3e' : stage >= 5 ? '#805ad5' : '#3182ce';
+    bars += `<div class="bar bar-done" style="left:0%;width:${w}%;background:${color}"></div>`;
+  }
+
+  // Future stages
+  if (stage < 10) {
+    const futureLeft = (stage / 10) * 100;
+    const futureW = ((10 - stage) / 10) * 100;
+    bars += `<div class="bar bar-todo" style="left:${futureLeft}%;width:${futureW}%"></div>`;
+  }
+
+  // Milestones
+  const ms = q.milestones;
+  if (ms.close) {
+    const closeX = dateToX(ms.close);
+    bars += `<div class="milestone" style="left:${closeX}%" title="Close: ${ms.close}"></div>`;
+  }
+
+  // Today line
+  const todayX = Math.max(0, Math.min(100, todayPct));
+  bars += `<div class="today-line" style="left:${todayX}%"><span class="today-label">TODAY 26/5</span></div>`;
+
+  return bars;
+}
+
+let html = `
+<div class="header-row">
+  <div class="label-col">Quotation</div>
+  <div class="months-row">
+    ${MONTHS.map((m,i) => `<div class="month">${m}<span>2026</span></div>`).join('')}
+  </div>
+</div>
+`;
+
+quotations.forEach(q => {
+  html += `
+<div class="row">
+  <div class="label-col-data">
+    <div class="ref">${q.ref}</div>
+    <div class="title">${q.title.length > 55 ? q.title.substring(0,55) + '…' : q.title}</div>
+    <span class="stage-badge">Stage ${q.stage}/10</span>
+  </div>
+  <div class="bars-row">
+    ${buildBarHTML(q)}
+  </div>
+</div>
+  `;
+});
+
+document.getElementById('chart').innerHTML = html;
+</script>
+</body>
+</html>
