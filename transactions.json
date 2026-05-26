@@ -71,12 +71,21 @@
       "amount": 50.1,
       "receiptRef": "file_40---15d3c3d7-3897-4eec-a907-9e1855d0f16e.jpg",
       "createdAt": "2026-05-24T04:11:01Z"
+    },
+    {
+      "id": "TRX009",
+      "date": "2026-05-26",
+      "spendingType": "Dining",
+      "description": "McDonald Causeway Bay Fortress Hill",
+      "amount": 89.5,
+      "receiptRef": "file_42---7dc71a26-e52f-43a5-89cb-2f8b4abbfa92.jpg",
+      "createdAt": "2026-05-26T06:07:00Z"
     }
   ],
   "summary": {
-    "total": 953.5,
+    "total": 1043.0,
     "byType": {
-      "Dining": 659.2,
+      "Dining": 748.7,
       "Transport": 42.5,
       "Shopping": 156.8,
       "Entertainment": 95.0
@@ -88,8 +97,9 @@
       "2026-04-18": 268.0,
       "2026-04-20": 42.5,
       "2026-04-22": 156.8,
-      "2026-04-24": 95.0
+      "2026-04-24": 95.0,
+      "2026-05-26": 89.5
     }
   },
-  "exportedAt": "2026-05-24T04:11:00Z"
+  "exportedAt": "2026-05-26T06:07:00Z"
 }
